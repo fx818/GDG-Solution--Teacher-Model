@@ -1,1 +1,1 @@
-# GDG-Solution--Teacher-Model
+# GDG-Solution-Teacher-Model
