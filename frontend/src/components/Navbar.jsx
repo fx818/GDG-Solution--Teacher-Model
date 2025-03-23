@@ -37,13 +37,15 @@ export default function Navbar() {
             <NavLink href="#features">Features</NavLink>
             <NavLink href="#why-us">Why Us</NavLink>
             <NavLink href="#classrooms">Classrooms</NavLink>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition-colors"
-            >
-              Dashboard
-            </motion.button>
+            <Link href="/dashboard">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition-colors"
+              >
+                Try Now
+              </motion.button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -72,12 +74,14 @@ export default function Navbar() {
                 <MobileNavLink href="#features">Features</MobileNavLink>
                 <MobileNavLink href="#why-us">Why Us</MobileNavLink>
                 <MobileNavLink href="#classrooms">Classrooms</MobileNavLink>
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition-colors"
-                >
-                  Get Started
-                </motion.button>
+                <Link href="/dashboard">
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-purple-600 text-white px-6 py-2 rounded-full hover:bg-purple-700 transition-colors w-full text-left"
+                  >
+                    Try Now
+                  </motion.button>
+                </Link>
               </div>
             </motion.div>
           )}

@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Parallax } from "react-parallax";
 import { ArrowRight, Brain, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 export default function Hero() {
   return (
@@ -52,14 +53,16 @@ export default function Hero() {
               transition={{ duration: 0.6, delay: 0.6 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-4"
             >
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-purple-600 text-white px-8 py-4 rounded-full flex items-center space-x-2 hover:bg-purple-700 transition-colors"
-              >
-                <span>DashBoard</span>
-                <ArrowRight className="w-5 h-5" />
-              </motion.button>
+              <Link href="/dashboard">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-purple-600 text-white px-8 py-4 rounded-full flex items-center space-x-2 hover:bg-purple-700 transition-colors"
+                >
+                  <span>Dashboard</span>
+                  <ArrowRight className="w-5 h-5" />
+                </motion.button>
+              </Link>
               
               <motion.button
                 whileHover={{ scale: 1.05 }}
