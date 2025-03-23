@@ -15,6 +15,7 @@ load_dotenv()
 ASTRA_DB_APPLICATION_TOKEN = os.environ.get("ASTRA_DB_APPLICATION_TOKEN")
 ASTRA_DB_ID = os.environ.get("ASTRA_DB_ID")
 ASTRA_DB_APITOKEN = os.environ.get("ASTRA_DB_APITOKEN")
+ASTRA_DB_API_ENDPOINT = os.environ.get("ASTRA_DB_API_ENDPOINT")
 
 
 '''
@@ -42,7 +43,6 @@ Using the gpt4all embeddings instead
 embedding = GPT4AllEmbeddings()
 
 
-ASTRA_DB_API_ENDPOINT="https://b7b5b1eb-57f4-413e-be51-0a1a434c3ae2-us-east1.apps.astra.datastax.com"
 ASTRA_DB_KEYSPACE="default_keyspace"
 
 astra_vector_store = AstraDBVectorStore(
