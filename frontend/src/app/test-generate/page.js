@@ -17,52 +17,111 @@ import {
 } from "lucide-react";
 
 export default function TeacherDashboard() {
-  const [inputType, setInputType] = useState("url");
+  // State for managing input type and content.
+  const [inputType, setInputType] = useState("url"); // "url", "file", or "text"
   const [url, setUrl] = useState("");
   const [file, setFile] = useState(null);
+  const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [testData, setTestData] = useState(null);
+  const [error, setError] = useState(null);
 
+  // Configure dropzone for file uploads.
   const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles.length > 0) {
       setFile(acceptedFiles[0]);
+      setError(null);
     }
   }, []);
-
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     multiple: false,
   });
 
+  // Handle switching between input types.
   const handleInputTypeChange = (e) => {
     setInputType(e.target.value);
     setUrl("");
     setFile(null);
+    setText("");
     setTestData(null);
+    setError(null);
   };
 
-  const handleGenerateTest = () => {
+  // Helper: Calls the generate_qa endpoint with given text.
+  const callGenerateQA = async (content) => {
+    const response = await fetch("http://127.0.0.1:5000/generate_qa", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ paragraph: content, n: 5 }),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to generate QA");
+    }
+    const qaData = await response.json();
+    // Wrap the array so the UI can use testData.questions.
+    return { questions: qaData };
+  };
+
+  // Main handler to generate test: extract text (if needed) then call generate_qa.
+  const handleGenerateTest = async () => {
     setLoading(true);
     setTestData(null);
-
-    setTimeout(() => {
-      const dummyData = {
-        questions: [
-          {
-            question: "What is 2 + 2?",
-            answers: ["4", "22", "2", "0"],
+    setError(null);
+    try {
+      let extractedText = "";
+      if (inputType === "file") {
+        // Upload the file to the file extractor API.
+        const formData = new FormData();
+        formData.append("file", file);
+        const extractResponse = await fetch("http://127.0.0.1:5000/extract_content", {
+          method: "POST",
+          body: formData,
+        });
+        if (!extractResponse.ok) {
+          throw new Error("Failed to extract content from file");
+        }
+        const extractData = await extractResponse.json();
+        if (extractData.error) {
+          throw new Error(extractData.error);
+        }
+        extractedText = extractData.content;
+      } else if (inputType === "url") {
+        // Call a hypothetical endpoint to extract content from the URL.
+        const urlResponse = await fetch("http://127.0.0.1:5000/extract_url", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
           },
-          {
-            question: "What is the capital of France?",
-            answers: ["Paris", "London", "Berlin", "Madrid"],
-          },
-        ],
-      };
-      setTestData(dummyData);
-      setLoading(false);
-    }, 1500);
+          body: JSON.stringify({ url }),
+        });
+        if (!urlResponse.ok) {
+          throw new Error("Failed to extract content from URL");
+        }
+        const urlData = await urlResponse.json();
+        if (urlData.error) {
+          throw new Error(urlData.error);
+        }
+        extractedText = urlData.content;
+      } else if (inputType === "text") {
+        if (!text.trim()) {
+          throw new Error("Text input is empty");
+        }
+        extractedText = text.trim();
+      }
+      // Now, call the generate_qa API with the extracted text.
+      const qaResult = await callGenerateQA(extractedText);
+      setTestData(qaResult);
+    } catch (err) {
+      console.error("Error:", err);
+      setError(err.message);
+    }
+    setLoading(false);
   };
 
+  // Download generated test as a PDF.
   const handleDownloadPDF = () => {
     if (!testData) return;
     const doc = new jsPDF();
@@ -71,10 +130,16 @@ export default function TeacherDashboard() {
     testData.questions.forEach((q, idx) => {
       doc.text(`${idx + 1}. ${q.question}`, 10, yOffset);
       yOffset += 10;
-      q.answers.forEach((a) => {
-        doc.text(`   - ${a}`, 10, yOffset);
+      // Either display a single answer or list multiple answers.
+      if (q.answer) {
+        doc.text(`   Answer: ${q.answer}`, 10, yOffset);
         yOffset += 10;
-      });
+      } else if (q.answers) {
+        q.answers.forEach((a) => {
+          doc.text(`   - ${a}`, 10, yOffset);
+          yOffset += 10;
+        });
+      }
       yOffset += 10;
     });
     doc.save("generated_test.pdf");
@@ -105,10 +170,10 @@ export default function TeacherDashboard() {
         {/* Welcome & Stats */}
         <div className="space-y-6">
           <h2 className="text-3xl font-bold text-gray-800">
-            Welcome back, Sarah
-            <span className="text-indigo-600">.</span>
+            Welcome back, Sarah<span className="text-indigo-600">.</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Sample statistics cards */}
             <div className="bg-white rounded-2xl shadow-xl p-6 transform hover:scale-105 transition-transform duration-300">
               <div className="flex items-center justify-between mb-4">
                 <Users className="h-8 w-8 text-indigo-600" />
@@ -142,7 +207,7 @@ export default function TeacherDashboard() {
           </div>
         </div>
 
-        {/* Quick Access */}
+        {/* Quick Access Section */}
         <div className="space-y-6">
           <h2 className="text-2xl font-bold text-gray-800">Quick Access</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -177,7 +242,7 @@ export default function TeacherDashboard() {
           <div className="space-y-6">
             {/* Input Type Selection */}
             <div className="flex space-x-6">
-              {["url", "file"].map((type) => (
+              {["url", "file", "text"].map((type) => (
                 <label
                   key={type}
                   className={`flex items-center space-x-3 p-4 rounded-xl cursor-pointer transition-all duration-300 ${
@@ -194,24 +259,21 @@ export default function TeacherDashboard() {
                     className="hidden"
                   />
                   {type === "url" ? (
-                    <LinkIcon className={`h-5 w-5 ${
-                      inputType === type ? "text-indigo-600" : "text-gray-400"
-                    }`} />
+                    <LinkIcon className={`h-5 w-5 ${inputType === type ? "text-indigo-600" : "text-gray-400"}`} />
+                  ) : type === "file" ? (
+                    <Upload className={`h-5 w-5 ${inputType === type ? "text-indigo-600" : "text-gray-400"}`} />
                   ) : (
-                    <Upload className={`h-5 w-5 ${
-                      inputType === type ? "text-indigo-600" : "text-gray-400"
-                    }`} />
+                    <FileText className={`h-5 w-5 ${inputType === type ? "text-indigo-600" : "text-gray-400"}`} />
                   )}
-                  <span className={`font-medium capitalize ${
-                    inputType === type ? "text-indigo-600" : "text-gray-600"
-                  }`}>
+                  <span className={`font-medium capitalize ${inputType === type ? "text-indigo-600" : "text-gray-600"}`}>
                     {type}
                   </span>
                 </label>
               ))}
             </div>
 
-            {inputType === "url" ? (
+            {/* Input fields based on type */}
+            {inputType === "url" && (
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Enter URL
@@ -224,7 +286,9 @@ export default function TeacherDashboard() {
                   className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-600 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-colors duration-300"
                 />
               </div>
-            ) : (
+            )}
+
+            {inputType === "file" && (
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Upload File
@@ -238,9 +302,7 @@ export default function TeacherDashboard() {
                   }`}
                 >
                   <input {...getInputProps()} />
-                  <Upload className={`h-12 w-12 mx-auto mb-4 ${
-                    isDragActive ? "text-indigo-600" : "text-gray-400"
-                  }`} />
+                  <Upload className={`h-12 w-12 mx-auto mb-4 ${isDragActive ? "text-indigo-600" : "text-gray-400"}`} />
                   {isDragActive ? (
                     <p className="text-indigo-600 font-medium">Drop it here!</p>
                   ) : file ? (
@@ -254,12 +316,31 @@ export default function TeacherDashboard() {
               </div>
             )}
 
+            {inputType === "text" && (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Enter or Paste Text
+                </label>
+                <textarea
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder="Enter your text here..."
+                  rows={8}
+                  className="text-black w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-600 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-colors duration-300"
+                ></textarea>
+              </div>
+            )}
+
             <div className="flex justify-center">
               <button
                 onClick={handleGenerateTest}
-                disabled={loading || (inputType === "url" && !url) || (inputType === "file" && !file)}
+                disabled={loading || 
+                  (inputType === "url" && !url) || 
+                  (inputType === "file" && !file) ||
+                  (inputType === "text" && !text.trim())
+                }
                 className={`px-8 py-3 rounded-xl font-semibold text-white transition-all duration-300 ${
-                  loading || (inputType === "url" && !url) || (inputType === "file" && !file)
+                  loading || (inputType === "url" && !url) || (inputType === "file" && !file) || (inputType === "text" && !text.trim())
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:shadow-lg hover:scale-105"
                 }`}
@@ -274,6 +355,12 @@ export default function TeacherDashboard() {
                 )}
               </button>
             </div>
+
+            {error && (
+              <div className="text-red-600 text-center font-medium">
+                {error}
+              </div>
+            )}
 
             {testData && (
               <div className="mt-8 space-y-6">
@@ -299,14 +386,21 @@ export default function TeacherDashboard() {
                         {idx + 1}. {q.question}
                       </p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {q.answers.map((a, aIdx) => (
-                          <div
-                            key={aIdx}
-                            className="p-3 rounded-lg bg-white border border-gray-200 hover:border-indigo-600 transition-colors duration-300"
-                          >
-                            <p className="text-gray-600">{a}</p>
+                        {q.answer ? (
+                          <div className="p-3 rounded-lg bg-white border border-gray-200 hover:border-indigo-600 transition-colors duration-300">
+                            <p className="text-gray-600">{q.answer}</p>
                           </div>
-                        ))}
+                        ) : (
+                          q.answers &&
+                          q.answers.map((a, aIdx) => (
+                            <div
+                              key={aIdx}
+                              className="p-3 rounded-lg bg-white border border-gray-200 hover:border-indigo-600 transition-colors duration-300"
+                            >
+                              <p className="text-gray-600">{a}</p>
+                            </div>
+                          ))
+                        )}
                       </div>
                     </div>
                   ))}
