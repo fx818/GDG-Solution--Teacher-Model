@@ -5,6 +5,7 @@ from utils.chatUrlUtil import *
 from utils.plaqueUtils import *
 from utils.qnaUtils import *
 from utils.mcqUtils import *
+from utils.voiceUtil import *
 
 load_dotenv()
 
@@ -108,7 +109,12 @@ def generate_mcq():
     mcq_data = generate_mcq_data(paragraph, n)
     return jsonify(mcq_data)
 
-
+@app.route("/texttovoice", methods=["POST"])
+def voice_response():
+    data = request.get_json()
+    text = data.get("text")
+    response = texttospeech(text)    
+    return response
 
 if __name__ == '__main__':
     app.run(debug=True)
