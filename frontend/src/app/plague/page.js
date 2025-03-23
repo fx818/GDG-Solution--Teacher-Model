@@ -9,16 +9,18 @@ import {
   Search, 
   Shield, 
   CheckCircle,
-  XCircle,
   RefreshCw
 } from "lucide-react";
 
 export default function PlagiarismChecker() {
+  // Toggle between file and text input modes.
+  const [inputMode, setInputMode] = useState("file"); // "file" or "text"
   const [file, setFile] = useState(null);
+  const [textInput, setTextInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
 
-  // Configure react-dropzone to accept PDF, DOC, DOCX, and TXT files
+  // Configure react-dropzone to accept text-based files.
   const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles.length > 0) {
       setFile(acceptedFiles[0]);
@@ -35,13 +37,45 @@ export default function PlagiarismChecker() {
     },
   });
 
-  const handleCheckPlagiarism = () => {
-    if (!file) return;
-    setLoading(true);
+  // Toggle input mode.
+  const handleInputModeChange = (e) => {
+    setInputMode(e.target.value);
+    setFile(null);
+    setTextInput("");
     setResult(null);
+  };
 
-    // Simulate API call with dummy data
-    setTimeout(() => {
+  // Simulate API call: In a real app, you would post { text } to your backend.
+  const simulateApiCall = async(textContent) => {
+    console.log(textContent)
+   const response = await fetch("http://127.0.0.1:5000/check_plagiarism", {
+     method: "POST",
+     headers: {
+       "Content-Type": "application/json",
+     },
+     body: JSON.stringify({ text: textContent }),
+   })
+   console.log(response)
+   if(response.ok){
+    console.log("hii")
+    const data = await response.json();
+    console.log(data)
+    const dummyResult = {
+      plagiarismPercent: Math.round(data.plaque_score*100),
+      matchedKeywords: ["education", "learning", "AI", "dashboard", "technology", "innovation"],
+      languagesDetected: ["English", "Python", "JavaScript", "HTML"],
+      sources: [
+        { url: "academic-papers.com/ai-education", similarity: "45%" },
+        { url: "research-gate.net/machine-learning", similarity: "33%" }
+      ],
+      report:
+        "The document shows high similarity with publicly available sources and academic papers. Significant matches were found in educational materials and technical articles.",
+      severity: "high" // low, medium, or high
+    };
+    setResult(dummyResult);
+    setLoading(false);
+   }
+   else{
       const dummyResult = {
         plagiarismPercent: 78,
         matchedKeywords: ["education", "learning", "AI", "dashboard", "technology", "innovation"],
@@ -50,15 +84,56 @@ export default function PlagiarismChecker() {
           { url: "academic-papers.com/ai-education", similarity: "45%" },
           { url: "research-gate.net/machine-learning", similarity: "33%" }
         ],
-        report: "The document shows high similarity with publicly available sources and academic papers. Significant matches were found in educational materials and technical articles.",
+        report:
+          "The document shows high similarity with publicly available sources and academic papers. Significant matches were found in educational materials and technical articles.",
         severity: "high" // low, medium, or high
       };
       setResult(dummyResult);
       setLoading(false);
-    }, 2000);
+   }
+    // setTimeout(() => {
+    //   const dummyResult = {
+    //     plagiarismPercent: 78,
+    //     matchedKeywords: ["education", "learning", "AI", "dashboard", "technology", "innovation"],
+    //     languagesDetected: ["English", "Python", "JavaScript", "HTML"],
+    //     sources: [
+    //       { url: "academic-papers.com/ai-education", similarity: "45%" },
+    //       { url: "research-gate.net/machine-learning", similarity: "33%" }
+    //     ],
+    //     report:
+    //       "The document shows high similarity with publicly available sources and academic papers. Significant matches were found in educational materials and technical articles.",
+    //     severity: "high" // low, medium, or high
+    //   };
+    //   setResult(dummyResult);
+    //   setLoading(false);
+    // }, 2000);
   };
 
-  // Helper: Returns gradient stop classes based on percentage
+  // Handler for plagiarism checking.
+  const handleCheckPlagiarism = () => {
+    if (inputMode === "file" && !file) return;
+    if (inputMode === "text" && !textInput.trim()) return;
+    setLoading(true);
+    setResult(null);
+
+    if (inputMode === "file") {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const fileText = event.target.result;
+        simulateApiCall(fileText);
+      };
+      reader.onerror = () => {
+        console.error("Error reading file");
+        setLoading(false);
+      };
+      // For simplicity, assume the file is text-based.
+      reader.readAsText(file);
+    } else {
+      simulateApiCall(textInput.trim());
+    }
+  };
+
+  // Helper: Returns gradient stop classes based on percentage.
   const getGradientStops = (percentage) => {
     if (percentage < 30)
       return { from: "stop-color-from-green-500", to: "stop-color-to-emerald-600" };
@@ -67,14 +142,14 @@ export default function PlagiarismChecker() {
     return { from: "stop-color-from-red-500", to: "stop-color-to-rose-600" };
   };
 
-  // Helper: Returns text color class based on percentage
+  // Helper: Returns text color class based on percentage.
   const getSeverityColor = (percentage) => {
     if (percentage < 30) return "text-green-500";
     if (percentage < 60) return "text-yellow-500";
     return "text-red-500";
   };
 
-  // Circular Progress Bar component with SVG animation
+  // Circular Progress Bar component with SVG animation.
   const CircularProgressBar = ({ percentage }) => {
     const radius = 80;
     const stroke = 12;
@@ -117,7 +192,7 @@ export default function PlagiarismChecker() {
             </linearGradient>
           </defs>
         </svg>
-        <div className="absolute inset-0 flex items-center justify-center flex-col md:mb-5">
+        <div className="absolute inset-0 flex items-center justify-center flex-col">
           <span className={`text-4xl font-bold ${getSeverityColor(percentage)}`}>
             {percentage}%
           </span>
@@ -138,82 +213,128 @@ export default function PlagiarismChecker() {
           </h1>
         </div>
         <p className="text-gray-600">
-          Upload your document to check for potential plagiarism and content similarity.
+          Upload your document or paste text to check for potential plagiarism and content similarity.
         </p>
       </header>
 
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
-          <div className="mb-8">
-            <div className="flex items-center space-x-2 mb-4">
-              <FileText className="h-5 w-5 text-indigo-600" />
-              <h2 className="text-xl font-semibold text-gray-800">Upload Your Document</h2>
-            </div>
-            <div
-              {...getRootProps()}
-              className={`p-8 border-2 border-dashed rounded-xl text-center cursor-pointer transition-all duration-300 ${
-                isDragActive
-                  ? "border-indigo-600 bg-indigo-50 scale-[0.99]"
-                  : "border-gray-300 hover:border-indigo-600 hover:bg-gray-50"
-              }`}
-            >
-              <input {...getInputProps()} />
-              <Upload
-                className={`h-12 w-12 mx-auto mb-4 transition-colors duration-300 ${
-                  isDragActive ? "text-indigo-600" : "text-gray-400"
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* Input Mode Toggle */}
+        <div className="flex space-x-4 mb-8">
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="radio"
+              value="file"
+              checked={inputMode === "file"}
+              onChange={handleInputModeChange}
+              className="form-radio text-indigo-600"
+            />
+            <span className="text-gray-700">File Upload</span>
+          </label>
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="radio"
+              value="text"
+              checked={inputMode === "text"}
+              onChange={handleInputModeChange}
+              className="form-radio text-indigo-600"
+            />
+            <span className="text-gray-700">Paste Text</span>
+          </label>
+        </div>
+
+        {/* Input Area */}
+        {inputMode === "file" ? (
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="mb-8">
+              <div className="flex items-center space-x-2 mb-4">
+                <FileText className="h-5 w-5 text-indigo-600" />
+                <h2 className="text-xl font-semibold text-gray-800">Upload Your Document</h2>
+              </div>
+              <div
+                {...getRootProps()}
+                className={`p-8 border-2 border-dashed rounded-xl text-center cursor-pointer transition-all duration-300 ${
+                  isDragActive
+                    ? "border-indigo-600 bg-indigo-50 scale-[0.99]"
+                    : "border-gray-300 hover:border-indigo-600 hover:bg-gray-50"
                 }`}
-              />
-              {isDragActive ? (
-                <p className="text-indigo-600 font-medium animate-pulse">
-                  Drop your file here...
-                </p>
-              ) : file ? (
-                <div className="space-y-2">
-                  <p className="text-gray-800 font-medium">{file.name}</p>
-                  <p className="text-sm text-gray-500">
-                    Click or drag another file to replace
+              >
+                <input {...getInputProps()} />
+                <Upload
+                  className={`h-12 w-12 mx-auto mb-4 transition-colors duration-300 ${
+                    isDragActive ? "text-indigo-600" : "text-gray-400"
+                  }`}
+                />
+                {isDragActive ? (
+                  <p className="text-indigo-600 font-medium animate-pulse">
+                    Drop your file here...
                   </p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <p className="text-gray-700 font-medium">
-                    Drag and drop your file here
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    Supports PDF, DOCX, DOC, and TXT files
-                  </p>
-                </div>
-              )}
+                ) : file ? (
+                  <div className="space-y-2">
+                    <p className="text-gray-800 font-medium">{file.name}</p>
+                    <p className="text-sm text-gray-500">
+                      Click or drag another file to replace
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-gray-700 font-medium">
+                      Drag and drop your file here
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Supports PDF, DOCX, DOC, and TXT files
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+        ) : (
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <div className="mb-8">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Enter or Paste Text
+              </label>
+              <textarea
+                value={textInput}
+                onChange={(e) => setTextInput(e.target.value)}
+                placeholder="Paste your text here..."
+                rows={8}
+                className=" text-black w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-600 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-colors duration-300"
+              ></textarea>
+            </div>
+          </div>
+        )}
 
-          <div className="flex justify-center">
-            <button
-              onClick={handleCheckPlagiarism}
-              disabled={!file || loading}
-              className={`
+        <div className="flex justify-center">
+          <button
+            onClick={handleCheckPlagiarism}
+            disabled={
+              (inputMode === "file" && !file) ||
+              (inputMode === "text" && !textInput.trim()) ||
+              loading
+            }
+            className={`
                 px-8 py-4 rounded-xl font-semibold text-white 
                 flex items-center space-x-2
                 transition-all duration-300
-                ${!file || loading
+                ${((inputMode === "file" && !file) || (inputMode === "text" && !textInput.trim())) || loading
                   ? "bg-gray-400 cursor-not-allowed opacity-50"
                   : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:shadow-lg hover:scale-105"
                 }
               `}
-            >
-              {loading ? (
-                <>
-                  <RefreshCw className="w-5 h-5 animate-spin" />
-                  <span>Analyzing Document...</span>
-                </>
-              ) : (
-                <>
-                  <Search className="w-5 h-5" />
-                  <span>Check for Plagiarism</span>
-                </>
-              )}
-            </button>
-          </div>
+          >
+            {loading ? (
+              <>
+                <RefreshCw className="w-5 h-5 animate-spin" />
+                <span>Analyzing Document...</span>
+              </>
+            ) : (
+              <>
+                <Search className="w-5 h-5" />
+                <span>Check for Plagiarism</span>
+              </>
+            )}
+          </button>
         </div>
 
         {result && (
