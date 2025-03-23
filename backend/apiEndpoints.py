@@ -7,10 +7,13 @@ from utils.qnaUtils import *
 from utils.mcqUtils import *
 from utils.voiceUtil import *
 from utils.extractionUtil import *
+from flask_cors import CORS
 
 load_dotenv()
 
 app = Flask(__name__)
+# Enable CORS for all routes and origins
+CORS(app)
 
 pdf = "notes/OOPConcepts.pdf"
 astra_vector_index = utility_function(pdf)
@@ -151,4 +154,3 @@ def extract_content():
 if __name__ == '__main__':
     app.run(debug=True)
     
-# JSON payload { "query": "your question" }
