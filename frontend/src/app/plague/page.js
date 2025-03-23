@@ -57,9 +57,11 @@ export default function PlagiarismChecker() {
    })
    console.log(response)
    if(response.ok){
+    console.log("hii")
     const data = await response.json();
+    console.log(data)
     const dummyResult = {
-      plagiarismPercent: data.plaque_score,
+      plagiarismPercent: Math.round(data.plaque_score*100),
       matchedKeywords: ["education", "learning", "AI", "dashboard", "technology", "innovation"],
       languagesDetected: ["English", "Python", "JavaScript", "HTML"],
       sources: [
