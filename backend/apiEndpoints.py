@@ -5,10 +5,15 @@ from utils.chatUrlUtil import *
 from utils.plaqueUtils import *
 from utils.qnaUtils import *
 from utils.mcqUtils import *
+from utils.voiceUtil import *
+from utils.extractionUtil import *
+from flask_cors import CORS
 
 load_dotenv()
 
 app = Flask(__name__)
+# Enable CORS for all routes and origins
+CORS(app)
 
 pdf = "notes/OOPConcepts.pdf"
 astra_vector_index = utility_function(pdf)
@@ -108,9 +113,44 @@ def generate_mcq():
     mcq_data = generate_mcq_data(paragraph, n)
     return jsonify(mcq_data)
 
+@app.route("/texttovoice", methods=["POST"])
+def voice_response():
+    data = request.get_json()
+    text = data.get("text")
+    response = texttospeech(text)    
+    return response
+
+# content extract
+
+@app.route('/extract_content', methods=['POST'])
+def extract_content():
+    """API endpoint to extract text content from a file upload."""
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    if file and allowed_file(file.filename):
+        try:
+            file_extension = file.filename.rsplit('.', 1)[1].lower()
+            if file_extension in ['doc', 'docx']:
+               text = extract_text_from_doc(file)
+            elif file_extension == 'pdf':
+               text = extract_text_from_pdf(file)
+            
+            if text:
+                return jsonify({'content': text})
+            else:
+                 return jsonify({'error': 'Could not read file'}), 500
+
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    else:
+        return jsonify({'error': 'File type not allowed'}), 400
+
+
 
 
 if __name__ == '__main__':
     app.run(debug=True)
     
-# JSON payload { "query": "your question" }
