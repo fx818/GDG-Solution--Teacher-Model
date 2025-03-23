@@ -3,8 +3,6 @@ import requests
 url = "https://api.cartesia.ai/tts/bytes"
 
 def texttospeech(text):
-
-
     payload = {
         "model_id": "sonic-2",
         "transcript": text,

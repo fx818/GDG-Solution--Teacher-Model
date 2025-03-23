@@ -1,5 +1,7 @@
+// import { useEffect } from "react";
 import React, { useRef, useState, useEffect } from 'react';
 import { MessageCircle, Send, MoreVertical, Mic, MicOff, Play, Pause, DivideSquare as SquareDivide, Languages, Microscope, Computer } from 'lucide-react';
+// require('dotenv').config();
 
 function App() {
   const videoRef = useRef(null);
@@ -27,14 +29,16 @@ function App() {
         const transcript = event.results[0][0].transcript;
         setMessages(prev => [...prev, { type: 'user', text: transcript }]);
         // Here you would call your API with the transcript
+
         handleApiCall(transcript);
+
       };
 
       recognitionRef.current.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
         setIsRecording(false);
       };
-      
+
       recognitionRef.current.onend = () => {
         setIsRecording(false);
       };
@@ -63,7 +67,7 @@ function App() {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
       setIsRecording(true);
-      
+
       if (recognitionRef.current) {
         recognitionRef.current.start();
       }
@@ -82,24 +86,27 @@ function App() {
   const handleApiCall = async (text) => {
     // Simulate API loading state
     setMessages(prev => [...prev, { type: 'agent', text: 'Thinking...', loading: true }]);
-    
     try {
-      // Replace with your actual API call
-      // const response = await fetch('your-api-endpoint', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ question: text }),
-      //   headers: { 'Content-Type': 'application/json' }
-      // });
-      // const data = await response.json();
-      
-      // Simulated API response
+
+      const { GoogleGenerativeAI } = require("@google/generative-ai");
+      const api = process.env.NEXT_PUBLIC_GEMINI_API_KEY
+      const genAI = new GoogleGenerativeAI(api);
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+      const prompt = "You are my personlised AI tutor named Gideon. Now answer me this " + text;
+
+      const result = await model.generateContent(prompt);
+      console.log(result.response.text());
+
       setTimeout(() => {
         setMessages(prev => [
           ...prev.filter(msg => !msg.loading),
-          { type: 'agent', text: `I understand your question: "${text}". Let me help you with that.` }
+          { type: 'agent', text: result.response.text() }
         ]);
       }, 1000);
-      
+
+      return result.response.text();
+
     } catch (error) {
       console.error('API call failed:', error);
       setMessages(prev => [
@@ -107,11 +114,12 @@ function App() {
         { type: 'agent', text: 'Sorry, I encountered an error. Please try again.' }
       ]);
     }
+
   };
 
   const handleSendMessage = () => {
     if (!inputText.trim()) return;
-    
+
     setMessages(prev => [...prev, { type: 'user', text: inputText }]);
     handleApiCall(inputText);
     setInputText('');
@@ -197,9 +205,8 @@ function App() {
                 {message.type === 'agent' && (
                   <div className="w-8 h-8 rounded-full bg-yellow-600 flex-shrink-0" />
                 )}
-                <div className={`px-3 py-2 rounded-lg max-w-[80%] ${
-                  message.type === 'user' ? 'bg-[#333333]' : 'bg-[#2a2a2a]'
-                }`}>
+                <div className={`px-3 py-2 rounded-lg max-w-[80%] ${message.type === 'user' ? 'bg-[#333333]' : 'bg-[#2a2a2a]'
+                  }`}>
                   <p className="text-sm leading-relaxed">{message.text}</p>
                 </div>
                 {message.type === 'user' && (
@@ -221,9 +228,8 @@ function App() {
               />
               <button
                 onClick={() => isRecording ? stopRecording() : startRecording()}
-                className={`p-2 rounded-full transition ${
-                  isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-[#2a2a2a] hover:bg-[#333333]'
-                }`}
+                className={`p-2 rounded-full transition ${isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-[#2a2a2a] hover:bg-[#333333]'
+                  }`}
               >
                 {isRecording ? (
                   <MicOff className="w-5 h-5" />

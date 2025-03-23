@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from dotenv import load_dotenv
 from utils.chatPdfUtil import *
 from utils.chatUrlUtil import *
@@ -8,6 +8,7 @@ from utils.mcqUtils import *
 from utils.voiceUtil import *
 from utils.extractionUtil import *
 from flask_cors import CORS
+import io
 
 load_dotenv()
 
@@ -117,8 +118,15 @@ def generate_mcq():
 def voice_response():
     data = request.get_json()
     text = data.get("text")
-    response = texttospeech(text)    
-    return response
+    
+    audio_data = texttospeech(text)  # Assuming this returns binary MP3 data
+    
+    # Convert to an in-memory file
+    audio_response = texttospeech(text)
+    audio_data = audio_response.content  # Extract the bytes from the response
+    audio_file = io.BytesIO(audio_data)
+    audio_file.seek(0)
+    return send_file(audio_file, mimetype="audio/mpeg", as_attachment=False)
 
 # content extract
 
