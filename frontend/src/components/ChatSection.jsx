@@ -543,7 +543,7 @@ function App() {
                  )}
                 <div className={`px-3 py-2 rounded-lg max-w-[80%] ${message.type === 'user' ? 'bg-[#333333]' : 'bg-[#2a2a2a]'}`}>
                   {message.type === 'agent-voice' ? (
-                    <audio controls src={message.audioUrl}></audio>
+                    <audio autoPlay controls src={message.audioUrl}></audio>
                   ) : (
                     <p className="text-sm leading-relaxed">{message.text}</p>
                   )}

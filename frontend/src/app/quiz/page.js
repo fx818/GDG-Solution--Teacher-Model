@@ -115,7 +115,7 @@ export default function QuizManagement() {
         extractedText = data.content;
       } else if (quizInputType === "url") {
         // Use URL extraction API.
-        const res = await fetch("http://127.0.0.1:5000/extract_url", {
+        const res = await fetch("http://127.0.0.1:5000/extract_url_content", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ url: quizUrl }),
@@ -139,7 +139,7 @@ export default function QuizManagement() {
       const mcqRes = await fetch("http://127.0.0.1:5000/generate_mcq", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paragraph: extractedText, n: 3 }),
+        body: JSON.stringify({ paragraph: extractedText, n: 5 }),
       });
       if (!mcqRes.ok) {
         throw new Error("Failed to generate MCQ");

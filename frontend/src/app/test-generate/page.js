@@ -90,7 +90,7 @@ export default function TeacherDashboard() {
         extractedText = extractData.content;
       } else if (inputType === "url") {
         // Call a hypothetical endpoint to extract content from the URL.
-        const urlResponse = await fetch("http://127.0.0.1:5000/query", {
+        const urlResponse = await fetch("http://127.0.0.1:5000/extract_url_content", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
