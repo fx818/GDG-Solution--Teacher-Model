@@ -1,6 +1,7 @@
 import docx
 import PyPDF2
 import io
+from langchain_community.document_loaders import WebBaseLoader
 
 ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
 
@@ -24,3 +25,10 @@ def extract_text_from_pdf(file_storage):
     for page in pdf_reader.pages:
         full_text += page.extract_text()
     return full_text
+
+def extract_text_from_url(url):
+    """Extract text from a URL."""
+    loader = WebBaseLoader(url)
+    data = loader.load()
+    result = data[0].page_content
+    return result

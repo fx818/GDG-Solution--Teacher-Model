@@ -16,45 +16,73 @@ app = Flask(__name__)
 # Enable CORS for all routes and origins
 CORS(app)
 
-pdf = "notes/OOPConcepts.pdf"
-astra_vector_index = utility_function(pdf)
 
 
 # chat pdf api
 
+from flask import Flask, request, jsonify
+import os
+
+app = Flask(__name__)
+
 @app.route('/query', methods=['POST'])
 def query_pdf():
     try:
-        data = request.get_json()
-        query = data.get("query", "").strip()
+        # Check if a file was uploaded
+        if 'file' not in request.files:
+            return jsonify({"error": "No file part in the request"}), 400
+        
+        file = request.files['file']
+        query = request.form.get("query", "").strip()
+
+        if not file or file.filename == '':
+            return jsonify({"error": "No file selected"}), 400
         
         if not query:
             return jsonify({"error": "Query cannot be empty"}), 400
+
+        # Save the file temporarily
+        file_path = os.path.join("uploads", file.filename)
+        file.save(file_path)
+
+        # Process the PDF and get the response
         
+        astra_vector_index = utility_function(file_path)
         response = get_query_result(query, astra_vector_index)
+
         return jsonify({"response": response})
+    
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
 # chat url api
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
 
 @app.route('/ask', methods=['POST'])
 def ask_question():
     try:
         data = request.get_json()
         question = data.get("question", "").strip()
-        
+        url = data.get("url", "").strip()
+
         if not question:
             return jsonify({"error": "Question cannot be empty"}), 400
         
-        answer = get_answer(question)
+        if not url:
+            return jsonify({"error": "URL cannot be empty"}), 400
+
+        answer = get_answer(question, url)
+
         return jsonify({"answer": answer})
+    
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Plaque Detection
 
+# Plaque Detection
 @app.route("/check_plagiarism", methods=["POST"])
 def check_plagiarism():
     """Placeholder for plagiarism check API endpoint."""
