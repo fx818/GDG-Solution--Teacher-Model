@@ -1,5 +1,10 @@
 import requests
- 
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+CARTESIA_API_KEY = os.environ.get("CARTESIA_API")
+
 url = "https://api.cartesia.ai/tts/bytes"
 
 def texttospeech(text):
@@ -19,7 +24,7 @@ def texttospeech(text):
     }
     headers = {
         "Cartesia-Version": "2024-11-13",
-        "X-API-Key": "",
+        "X-API-Key": CARTESIA_API_KEY,
         "Content-Type": "application/json"
     }
 

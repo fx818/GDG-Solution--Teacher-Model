@@ -175,7 +175,21 @@ def extract_content():
     else:
         return jsonify({'error': 'File type not allowed'}), 400
 
-
+@app.route('/extract_url_content', methods=['POST'])
+def extract_content_url():
+    """API endpoint to extract text content from a URL."""
+    data = request.get_json()
+    url = data.get("url")
+    if not url:
+        return jsonify({'error': 'URL cannot be empty'}), 400
+    try:
+        text = extract_text_from_url(url)
+        if text:
+            return jsonify({'content': text})
+        else:
+            return jsonify({'error': 'Could not read URL content'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 if __name__ == '__main__':
