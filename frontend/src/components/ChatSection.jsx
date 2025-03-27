@@ -524,7 +524,7 @@ function App() {
         </div>
 
         {/* Chat Section */}
-        <div className="w-full md:w-1/3 bg-[#1a1a1a] rounded-xl shadow-md flex flex-col">
+        <div className="w-full md:w-1/3 bg-[#1a1a1a] rounded-xl shadow-md flex flex-col h-[600px]">
           <div className="border-b border-gray-800 p-4 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-blue-500" />
