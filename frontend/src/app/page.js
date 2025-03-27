@@ -5,6 +5,7 @@ import { Suspense, useState, useEffect } from 'react';
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Loading from "@/components/Loading";
+import PdfViewer from '@/components/pdfView';
 
 // Dynamically import the heavyweight components to ensure they load after initial render
 const Hero = dynamic(() => import('@/components/Hero'), { ssr: false });
@@ -47,6 +48,7 @@ export default function Home() {
         <ChatSection />
         <VirtualClassSection/>
         <Footer/>
+        {/* <PdfViewer/> */}
       </Suspense>
     </main>
   );

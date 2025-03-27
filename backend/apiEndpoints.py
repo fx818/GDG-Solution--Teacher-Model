@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, Response
 from dotenv import load_dotenv
 from utils.chatPdfUtil import *
 from utils.chatUrlUtil import *
@@ -122,11 +122,13 @@ def voice_response():
     audio_data = texttospeech(text)  # Assuming this returns binary MP3 data
     
     # Convert to an in-memory file
-    audio_response = texttospeech(text)
-    audio_data = audio_response.content  # Extract the bytes from the response
-    audio_file = io.BytesIO(audio_data)
-    audio_file.seek(0)
-    return send_file(audio_file, mimetype="audio/mpeg", as_attachment=False)
+    # audio_response = texttospeech(text)
+    return Response(audio_data, mimetype="audio/mpeg")
+    # return audio_response
+    # audio_data = audio_response.content  # Extract the bytes from the response
+    # audio_file = io.BytesIO(audio_data)
+    # audio_file.seek(0)
+    # return send_file(audio_file, mimetype="audio/mpeg", as_attachment=False)
 
 # content extract
 

@@ -25,14 +25,14 @@ def texttospeech(text):
 
     response = requests.post(url, json=payload, headers=headers)
 
-    # if response.status_code == 200:
-    #     with open("output.mp3", "wb") as f:
-    #         f.write(response.content)
-    #     print("MP3 file saved as output.mp3")
-    # else:
-    #     print(f"Error: {response.status_code}, {response.text}")
+    if response.status_code == 200:
+        with open("output.mp3", "wb") as f:
+            f.write(response.content)
+        print("MP3 file saved as output.mp3")
+    else:
+        print(f"Error: {response.status_code}, {response.text}")
 
-    return response
+    return response.content
 
 # if response.status_code == 200:
 #     audio_bytes = io.BytesIO(response.content)  # Store in memory

@@ -2,6 +2,9 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { MessageCircle, Send, MoreVertical, Mic, MicOff, Play, Pause, DivideSquare as SquareDivide, Languages, Microscope, Computer } from 'lucide-react';
 // require('dotenv').config();
+import axios from 'axios';
+// import fs from 'fs';
+// const fs = require('fs');
 
 function App() {
   const videoRef = useRef(null);
@@ -13,6 +16,39 @@ function App() {
       text: 'Hi! How can I help you with your studies today?'
     }
   ]);
+
+
+  // const fs = require('fs');
+  // const axios = require('axios');
+  async function saveMp3() {
+    try {
+      const response = await axios.post(
+        'http://127.0.0.1:5000/texttovoice',
+        { text: "Hello, world!" },
+        {
+          responseType: 'arraybuffer',
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+  
+      const blob = new Blob([response.data], { type: 'audio/mpeg' });
+      const url = URL.createObjectURL(blob);
+  
+      // Create a temporary download link
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'output.mp3';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+  
+      console.log('MP3 file downloaded as output.mp3');
+    } catch (error) {
+      console.error('Error saving MP3:', error.response?.data || error.message);
+    }
+  }
+  
+
   const [inputText, setInputText] = useState('');
   const mediaRecorderRef = useRef(null);
   const recognitionRef = useRef(null);
@@ -97,6 +133,13 @@ function App() {
 
       const result = await model.generateContent(prompt);
       console.log(result.response.text());
+
+      // const mp3Url = 'http://127.0.0.1:5000/texttovoice'; // Replace with actual URL
+      // const outputFilePath = 'output.mp3';
+
+      // saveMp3(mp3Url, outputFilePath);
+      console.log("Some prob??")
+      saveMp3();
 
       setTimeout(() => {
         setMessages(prev => [
