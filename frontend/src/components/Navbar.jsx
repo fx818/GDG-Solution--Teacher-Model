@@ -34,7 +34,7 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
-            <NavLink href="#features">Features</NavLink>
+            <NavLink href="#features">Assist Teachers</NavLink>
             <NavLink href="#why-us">Why Us</NavLink>
             <NavLink href="#classrooms">Classrooms</NavLink>
             <Link href="/dashboard">

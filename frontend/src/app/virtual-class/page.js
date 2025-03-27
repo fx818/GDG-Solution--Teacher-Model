@@ -62,13 +62,16 @@ export default function HomePage() {
 
   // Dummy lecture lines to stream onto the board
   const lectureLines = [
-    "Welcome to our virtual class.",
-    "Today we'll cover the fundamentals of Artificial Intelligence.",
-    "Let's start with a brief history of machine learning.",
-    "Deep learning is revolutionizing the field.",
-    "Feel free to ask questions along the way.",
-    "That concludes our demo lecture. Thank you!"
+    "Today we're going to learn about the basics of Artificial Intelligence.",
+    "AI aims to create systems that simulate human intelligence.",
+    "We achieve this using algorithms, particularly machine learning, which lets computers learn from data.",
+    "Deep learning, a subset of AI, employs neural networks for complex tasks.",
+    "It's about teaching computers to recognize patterns, solve problems, and understand language.",
+    "This field is rooted in mathematics and data analysis.",
+    "AI holds immense potential across industries, but we must consider its ethical implications.",
+    "Thank you for your attention."
   ];
+  
 
   // Refs for intervals and time tracking
   const lectureIndexRef = useRef(0);
@@ -143,13 +146,14 @@ export default function HomePage() {
       } else {
         clearInterval(lectureIntervalRef.current);
       }
-    }, 4000);
+    }, 5500);
   };
 
   // Stop the demo lecture
   const stopDemoLecture = () => {
     setDemoRunning(false);
     setCurrentAction("Animation");
+    setLectureText("");
     clearInterval(movementIntervalRef.current);
     clearInterval(lectureIntervalRef.current);
     elapsedRef.current = 0;
@@ -161,7 +165,7 @@ export default function HomePage() {
     <div className="relative w-full h-screen bg-gray-100">
       {/* Background audio for lecture */}
       {demoRunning && (
-        <audio src="/audio/lecture-demo.mp3" autoPlay loop className="hidden" />
+        <audio src="/audio/lecture_demo.mp3" autoPlay className="hidden" />
       )}
       <ClassroomScene
         questionText={lectureText}

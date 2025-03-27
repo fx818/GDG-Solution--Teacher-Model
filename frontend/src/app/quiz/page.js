@@ -312,7 +312,7 @@ export default function QuizManagement() {
 
           <div className="space-y-8">
             {/* Input Type Selection */}
-            <div className="flex space-x-6">
+            <div className="flex space-x-6 flex-col md:flex-row">
               {["url", "file", "text"].map((type) => (
                 <label
                   key={type}

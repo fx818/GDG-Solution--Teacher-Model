@@ -37,11 +37,11 @@ export default function Features() {
           className="text-center mb-16"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Revolutionary Features
+            Revolutionary Features to Assist Teachers
           </h2>
           <p className="text-xl text-gray-400 max-w-2xl mx-auto">
             Experience the power of AI-driven education with our cutting-edge features
-            designed to enhance your learning journey.
+            designed to enhance teacher efficiency and student engagement.
           </p>
         </motion.div>
 
@@ -76,24 +76,30 @@ export default function Features() {
             variants={itemVariants}
           />
         </Link>
+        <Link href="/pdf-chat">
           <FeatureCard
             icon={<Users />}
-            title="Interactive Sessions"
-            description="Engage in dynamic learning sessions with real-time feedback"
+            title="Chat with a pdf"
+            description="Engage in dynamic learning sessions with real-time intractions with the uploaded pdf."
             variants={itemVariants}
           />
+        </Link>
+        <Link href="/url-chat">
           <FeatureCard
             icon={<Sparkles />}
-            title="Smart Assessment"
-            description="Get detailed insights into your performance with AI analytics"
+            title="Chat with a url"
+            description="Engage in dynamic learning sessions with real-time intractions with the uploaded url."
             variants={itemVariants}
           />
+        </Link>
+        <Link href="/doubt-engine">
           <FeatureCard
             icon={<BookOpen />}
-            title="Rich Content Library"
-            description="Access a vast collection of curated learning materials"
+            title="24/7 Doubt Engine"
+            description="AI-powered system that helps provide instant answers to your doubts."
             variants={itemVariants}
           />
+        </Link>
         </motion.div>
       </div>
     </section>

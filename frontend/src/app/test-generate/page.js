@@ -90,7 +90,7 @@ export default function TeacherDashboard() {
         extractedText = extractData.content;
       } else if (inputType === "url") {
         // Call a hypothetical endpoint to extract content from the URL.
-        const urlResponse = await fetch("http://127.0.0.1:5000/extract_url", {
+        const urlResponse = await fetch("http://127.0.0.1:5000/query", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -148,7 +148,7 @@ export default function TeacherDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
-      <header className="w-full bg-white shadow-lg backdrop-blur-sm bg-white/90 sticky top-0 z-50">
+      <header className="w-full bg-white shadow-lg backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <BookOpen className="h-8 w-8 text-indigo-600" />
@@ -241,7 +241,7 @@ export default function TeacherDashboard() {
 
           <div className="space-y-6">
             {/* Input Type Selection */}
-            <div className="flex space-x-6">
+            <div className="flex space-x-6 flex-col md:flex-row">
               {["url", "file", "text"].map((type) => (
                 <label
                   key={type}

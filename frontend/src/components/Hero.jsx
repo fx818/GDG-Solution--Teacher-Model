@@ -59,19 +59,21 @@ export default function Hero() {
                   whileTap={{ scale: 0.95 }}
                   className="bg-purple-600 text-white px-8 py-4 rounded-full flex items-center space-x-2 hover:bg-purple-700 transition-colors"
                 >
-                  <span>Dashboard</span>
+                  <span>Student DashBoard</span>
                   <ArrowRight className="w-5 h-5" />
                 </motion.button>
               </Link>
               
+              <Link href="#features">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="bg-white/10 backdrop-blur-sm text-white px-8 py-4 rounded-full hover:bg-white/20 transition-colors"
               >
-                New? Register Now
+                Teacher Assistant
               </motion.button>
-            </motion.div>
+              </Link>
+            </motion.div> 
           </div>
 
           <motion.div
