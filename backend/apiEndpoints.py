@@ -26,6 +26,7 @@ def query_pdf():
         
         file = request.files['file']
         query = request.form.get("query", "").strip()
+       
 
         if not file or file.filename == '':
             return jsonify({"error": "No file selected"}), 400
