@@ -16,15 +16,7 @@ app = Flask(__name__)
 # Enable CORS for all routes and origins
 CORS(app)
 
-
-
 # chat pdf api
-
-from flask import Flask, request, jsonify
-import os
-
-app = Flask(__name__)
-
 @app.route('/query', methods=['POST'])
 def query_pdf():
     try:
@@ -57,10 +49,6 @@ def query_pdf():
 
 
 # chat url api
-from flask import Flask, request, jsonify
-
-app = Flask(__name__)
-
 @app.route('/ask', methods=['POST'])
 def ask_question():
     try:
