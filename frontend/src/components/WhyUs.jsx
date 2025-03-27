@@ -11,13 +11,13 @@ export default function WhyUs() {
   });
 
   return (
-    <div className="flex justify-center items-center py-20 bg-black px-20">
+    <div className="flex justify-center items-center py-20 bg-black px-4 md:px-20">
       {/* Outer wrapper with animated border */}
       <div className="relative inline-block p-[0.85px]">
-        {/* This div acts as the animated border overlay */}
+        {/* Animated border overlay */}
         <div className="absolute inset-0 rounded-2xl p-[2px] animate-border pointer-events-none" />
         {/* Actual content container */}
-        <div className="relative bg-black rounded-2xl p-4 ">
+        <div className="relative bg-black rounded-2xl p-4">
           <section id="why-us" className="relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-transparent" />
 
@@ -28,7 +28,7 @@ export default function WhyUs() {
                   animate={inView ? { opacity: 1, x: 0 } : {}}
                   transition={{ duration: 0.6 }}
                 >
-                  <h2 className="text-3xl md:text-4xl font-bold mb-6">
+                  <h2 className="text-3xl sm:text-4xl font-bold mb-6">
                     Why Choose Our AI Tutor?
                   </h2>
                   <p className="text-lg text-gray-400 mb-8">
@@ -80,15 +80,15 @@ export default function WhyUs() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={inView ? { opacity: 1, y: 0 } : {}}
                     transition={{ delay: 0.3 }}
-                    className="absolute bottom-8 left-8 right-8 bg-white/10 backdrop-blur-lg rounded-xl p-6"
+                    className="absolute bottom-4 sm:bottom-8 left-4 sm:left-8 right-4 sm:right-8 bg-white/10 backdrop-blur-lg rounded-xl p-4 sm:p-6"
                   >
                     <div className="flex items-center space-x-4">
                       <div className="w-12 h-12 bg-purple-500 rounded-full flex items-center justify-center">
                         <CheckCircle className="w-6 h-6 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-semibold">Success Rate</h3>
-                        <p className="text-gray-400">95% student satisfaction</p>
+                        <h3 className="text-lg sm:text-xl font-semibold">Success Rate</h3>
+                        <p className="text-gray-400 text-sm">95% student satisfaction</p>
                       </div>
                     </div>
                   </motion.div>
@@ -118,7 +118,6 @@ export default function WhyUs() {
           );
           background-size: 200% auto;
           animation: borderAnimation 4s linear infinite;
-          
         }
       `}</style>
     </div>

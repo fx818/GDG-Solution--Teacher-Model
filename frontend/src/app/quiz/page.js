@@ -25,7 +25,7 @@ export default function QuizManagement() {
 
   /* =======================
        Section 1: Quiz Management (Student Records)
-  ========================== */
+  ======================== */
   const studentRecords = [
     { id: 1, name: "Alice", quizzes: 5, average: 80, best: 90 },
     { id: 2, name: "Bob", quizzes: 3, average: 70, best: 75 },
@@ -57,17 +57,21 @@ export default function QuizManagement() {
 
   /* =======================
        Section 2: Quiz Generation
-  ========================== */
+  ======================== */
+  // Support three input types: "url", "file", and "text"
   const [quizInputType, setQuizInputType] = useState("url");
   const [quizUrl, setQuizUrl] = useState("");
   const [quizFile, setQuizFile] = useState(null);
+  const [quizText, setQuizText] = useState("");
   const [quizLoading, setQuizLoading] = useState(false);
   const [quizData, setQuizData] = useState(null);
   const [quizLink, setQuizLink] = useState("");
+  const [quizError, setQuizError] = useState("");
 
   const onQuizDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles.length > 0) {
       setQuizFile(acceptedFiles[0]);
+      setQuizError("");
     }
   }, []);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -79,37 +83,78 @@ export default function QuizManagement() {
     setQuizInputType(e.target.value);
     setQuizUrl("");
     setQuizFile(null);
+    setQuizText("");
     setQuizData(null);
     setQuizLink("");
+    setQuizError("");
   };
 
-  const handleGenerateQuiz = () => {
+  // Function to generate quiz by extracting content (if needed) then calling the MCQ API.
+  const handleGenerateQuiz = async () => {
     setQuizLoading(true);
     setQuizData(null);
     setQuizLink("");
-    setTimeout(() => {
-      const dummyQuiz = {
-        questions: [
-          {
-            question: "What is the capital of Germany?",
-            options: ["Berlin", "Munich", "Frankfurt", "Hamburg", "Cologne"],
-            correct: "Berlin",
-          },
-          {
-            question: "Which planet is known as the Red Planet?",
-            options: ["Earth", "Mars", "Jupiter", "Saturn", "Venus"],
-            correct: "Mars",
-          },
-          {
-            question: "What is the largest ocean in the world?",
-            options: ["Atlantic", "Indian", "Arctic", "Southern", "Pacific"],
-            correct: "Pacific",
-          },
-        ],
-      };
-      setQuizData(dummyQuiz);
-      setQuizLoading(false);
-    }, 1500);
+    setQuizError("");
+    try {
+      let extractedText = "";
+      if (quizInputType === "file") {
+        // Use file extraction API.
+        const formData = new FormData();
+        formData.append("file", quizFile);
+        const res = await fetch("http://127.0.0.1:5000/extract_content", {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) {
+          throw new Error("Failed to extract content from file");
+        }
+        const data = await res.json();
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        extractedText = data.content;
+      } else if (quizInputType === "url") {
+        // Use URL extraction API.
+        const res = await fetch("http://127.0.0.1:5000/extract_url", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: quizUrl }),
+        });
+        if (!res.ok) {
+          throw new Error("Failed to extract content from URL");
+        }
+        const data = await res.json();
+        if (data.error) {
+          throw new Error(data.error);
+        }
+        extractedText = data.content;
+      } else if (quizInputType === "text") {
+        if (!quizText.trim()) {
+          throw new Error("Text input is empty");
+        }
+        extractedText = quizText.trim();
+      }
+      
+      // Now call the MCQ generation API.
+      const mcqRes = await fetch("http://127.0.0.1:5000/generate_mcq", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paragraph: extractedText, n: 3 }),
+      });
+      if (!mcqRes.ok) {
+        throw new Error("Failed to generate MCQ");
+      }
+      const mcqData = await mcqRes.json();
+      if (mcqData.error) {
+        throw new Error(mcqData.error);
+      }
+      setQuizData(mcqData);
+      console.log(mcqData)
+    } catch (err) {
+      console.error("Error generating quiz:", err);
+      setQuizError(err.message);
+    }
+    setQuizLoading(false);
   };
 
   const handleGenerateQuizLink = () => {
@@ -120,7 +165,7 @@ export default function QuizManagement() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       {showQuiz && quizData && (
         <QuizPlayer 
-          questions={quizData.questions} 
+          questions={quizData} 
           onClose={() => setShowQuiz(false)} 
         />
       )}
@@ -138,7 +183,6 @@ export default function QuizManagement() {
               </h1>
             </div>
             <div className="flex items-center space-x-6">
-              
               <img
                 src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=faces"
                 alt="Profile"
@@ -255,29 +299,6 @@ export default function QuizManagement() {
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
-
-          {/* Simple chart visualization */}
-          {/* <div className="mt-8">
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">
-              Average Scores
-            </h3>
-            <div className="space-y-2">
-              {studentRecords.map((student) => (
-                <div key={student.id} className="flex items-center">
-                  <div className="w-32 text-gray-700">{student.name}</div>
-                  <div className="flex-1 bg-gray-200 rounded h-4 relative">
-                    <div
-                      className="bg-indigo-600 h-4 rounded"
-                      style={{ width: `${(student.average / maxAvg) * 100}%` }}
-                    ></div>
-                    <span className="absolute right-2 text-xs text-white">
-                      {student.average}%
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div> */}
         </section>
 
         {/* Section 2: Quiz Generation */}
@@ -291,8 +312,8 @@ export default function QuizManagement() {
 
           <div className="space-y-8">
             {/* Input Type Selection */}
-            <div className="flex space-x-6">
-              {["url", "file"].map((type) => (
+            <div className="flex space-x-6 flex-col md:flex-row">
+              {["url", "file", "text"].map((type) => (
                 <label
                   key={type}
                   className={`flex-1 flex items-center space-x-3 p-6 rounded-xl cursor-pointer transition-all duration-300 ${
@@ -310,37 +331,30 @@ export default function QuizManagement() {
                     className="hidden"
                   />
                   {type === "url" ? (
-                    <LinkIcon
-                      className={`h-6 w-6 ${
-                        quizInputType === type ? "text-indigo-600" : "text-gray-400"
-                      }`}
-                    />
+                    <LinkIcon className={`h-6 w-6 ${quizInputType === type ? "text-indigo-600" : "text-gray-400"}`} />
+                  ) : type === "file" ? (
+                    <Upload className={`h-6 w-6 ${quizInputType === type ? "text-indigo-600" : "text-gray-400"}`} />
                   ) : (
-                    <Upload
-                      className={`h-6 w-6 ${
-                        quizInputType === type ? "text-indigo-600" : "text-gray-400"
-                      }`}
-                    />
+                    <FileText className={`h-6 w-6 ${quizInputType === type ? "text-indigo-600" : "text-gray-400"}`} />
                   )}
                   <div>
-                    <span
-                      className={`block font-semibold capitalize ${
-                        quizInputType === type ? "text-indigo-600" : "text-gray-700"
-                      }`}
-                    >
-                      {type === "url" ? "Website URL" : "Upload Document"}
+                    <span className={`block font-semibold capitalize ${quizInputType === type ? "text-indigo-600" : "text-gray-700"}`}>
+                      {type === "url" ? "Website URL" : type === "file" ? "Upload Document" : "Enter Text"}
                     </span>
                     <span className="text-sm text-gray-500">
                       {type === "url" 
                         ? "Generate quiz from web content" 
-                        : "Upload PDF, DOCX, or TXT files"}
+                        : type === "file"
+                        ? "Upload PDF, DOCX, or TXT files"
+                        : "Paste your content here"}
                     </span>
                   </div>
                 </label>
               ))}
             </div>
 
-            {quizInputType === "url" ? (
+            {/* Input fields based on type */}
+            {quizInputType === "url" && (
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Enter URL
@@ -358,7 +372,9 @@ export default function QuizManagement() {
                   />
                 </div>
               </div>
-            ) : (
+            )}
+
+            {quizInputType === "file" && (
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Upload File
@@ -373,9 +389,7 @@ export default function QuizManagement() {
                 >
                   <input {...getInputProps()} />
                   <Upload
-                    className={`h-12 w-12 mx-auto mb-4 ${
-                      isDragActive ? "text-indigo-600" : "text-gray-400"
-                    }`}
+                    className={`h-12 w-12 mx-auto mb-4 ${isDragActive ? "text-indigo-600" : "text-gray-400"}`}
                   />
                   {isDragActive ? (
                     <p className="text-indigo-600 font-medium">Drop it here!</p>
@@ -395,18 +409,35 @@ export default function QuizManagement() {
               </div>
             )}
 
+            {quizInputType === "text" && (
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Enter or Paste Text
+                </label>
+                <textarea
+                  value={quizText}
+                  onChange={(e) => setQuizText(e.target.value)}
+                  placeholder="Enter your content here..."
+                  rows={8}
+                  className="text-black w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-indigo-600 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-colors duration-300"
+                ></textarea>
+              </div>
+            )}
+
             <div className="flex justify-center">
               <button
                 onClick={handleGenerateQuiz}
                 disabled={
                   quizLoading ||
                   (quizInputType === "url" && !quizUrl) ||
-                  (quizInputType === "file" && !quizFile)
+                  (quizInputType === "file" && !quizFile) ||
+                  (quizInputType === "text" && !quizText.trim())
                 }
                 className={`px-8 py-4 rounded-xl font-semibold text-white transition-all duration-300 ${
                   quizLoading ||
                   (quizInputType === "url" && !quizUrl) ||
-                  (quizInputType === "file" && !quizFile)
+                  (quizInputType === "file" && !quizFile) ||
+                  (quizInputType === "text" && !quizText.trim())
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-gradient-to-r from-indigo-600 to-purple-600 hover:shadow-lg hover:scale-105"
                 }`}
@@ -424,6 +455,12 @@ export default function QuizManagement() {
                 )}
               </button>
             </div>
+
+            {quizError && (
+              <div className="text-red-600 text-center font-medium">
+                {quizError}
+              </div>
+            )}
 
             {quizData && (
               <div className="mt-8 space-y-6">
@@ -448,7 +485,9 @@ export default function QuizManagement() {
                 )}
 
                 <div className="space-y-4">
-                  {quizData.questions.map((q, idx) => (
+                  {quizData.map((q, idx) => {
+                    console.log(q)
+                    return(
                     <div
                       key={idx}
                       className="p-6 rounded-xl bg-gradient-to-br from-gray-50 to-white shadow-md hover:shadow-lg transition-shadow duration-300"
@@ -458,9 +497,11 @@ export default function QuizManagement() {
                           {idx + 1}
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium text-gray-800 mb-4">
-                            {q.question}
-                          </p>
+                        
+                            {Object.keys(q).filter(key => key.startsWith('question')).map(key => (
+                              <p key={key} className="font-medium text-gray-800 mb-4">{q[key]}</p>
+                            ))}
+                          
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {q.options.map((option, oIdx) => (
                               <div
@@ -474,7 +515,7 @@ export default function QuizManagement() {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
               </div>
             )}

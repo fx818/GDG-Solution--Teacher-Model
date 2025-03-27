@@ -101,7 +101,7 @@ export default function DashboardSidebar() {
     {
       icon: <BookOpen className="h-5 w-5" />,
       label: "PDF Interaction",
-      path: "/dashboard/pdfs",
+      path: "/pdf-chat",
     },
     {
       icon: <BookText className="h-5 w-5" />,

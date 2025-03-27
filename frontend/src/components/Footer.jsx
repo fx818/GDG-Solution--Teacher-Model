@@ -7,7 +7,7 @@ export default function Footer() {
         {/* Social Icons */}
         <div className="w-full flex flex-wrap justify-center space-x-2 md:space-x-6 mb-6">
           {[Facebook, Twitter, Instagram,LinkedIn].map((Icon, index) => (
-              <Icon />
+              <Icon  key={index} />
           ))}
         </div>
 
